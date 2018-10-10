@@ -18,9 +18,10 @@ def book_spider(book_tag):
 	page_num = 0
 	book_list = []
 	try_times = 0
-	while(1):
+	while 1:
+		# douban的分页是通过start参数作为明细起始位置来的
 		url = 'https://douban.com/tag/'+urllib.quote(book_tag)+'/book?start='+str(page_num*15)
-		time.sleep(np.random.rand()*5)
+		time.sleep(np.random.randint(1, 5))  # sleep延迟秒数 randint取[1,5)之间的整数
 		try:
 			req = urllib2.Request(url, headers=hds[page_num % len(hds)])
 			source_code = urllib2.urlopen(req).read()
@@ -28,15 +29,16 @@ def book_spider(book_tag):
 		except(urllib2.HTTPError, urllib2.URLError), e:
 			print e
 			continue
-		soup = BeautifulSoup(plain_text)
-		list_soup = soup.find('div', {'class': 'mod book-list'})
+		soup = BeautifulSoup(plain_text, 'lxml')  # 不添加解析器会突然卡死
+		list_soup = soup.find('div', {'class': 'mod book-list'})  # 书单列表的class是mod book-list
 		try_times += 1
 		if list_soup == None and try_times < 200:
 			continue
 		elif list_soup == None or len(list_soup) <= 1:
 			break
-		for book_info in list_soup.findAll('dd'):
+		for book_info in list_soup.findAll('dd'):  # 书籍信息在dd标签下
 			title = book_info.find('a', {'class': 'title'}).string.strip()
+			print title
 			desc = book_info.find('div', {'class': 'desc'}).string.strip()
 			desc_list = desc.split('/')
 			book_url = book_info.find('a', {'class': 'title'}).get('href')
@@ -57,7 +59,7 @@ def book_spider(book_tag):
 				people_num = people_num.strip('人评价')
 			except:
 				people_num = '0'
-			book_list.append([title, rating, people_num, author_info, pub_info])
+			book_list.append([title, rating, people_num, author_info, pub_info, book_url])
 			try_times = 0
 		page_num += 1
 		print 'Dowmloading information from page %d' % page_num
@@ -86,15 +88,15 @@ def do_spider(book_tag_lists):
 
 
 def print_book_lists_excel(book_lists, book_tag_lists):
-	wb = Workbook(optimized_write=True)
+	wb = Workbook(write_only=True)
 	ws = []
 	for i in range(len(book_tag_lists)):
-		ws.append(wb.create_sheet(title=book_tag_lists[1].decode()))
+		ws.append(wb.create_sheet(title=book_tag_lists[i].decode()))
 	for i in range(len(book_tag_lists)):
-		ws[i].append(['序号', '书名', '评分', '评价人数', '作者', '出版社'])
+		ws[i].append(['序号', '书名', '评分', '评价人数', '作者', '出版社', '链接'])
 		count = 1
 		for bl in book_lists[i]:
-			ws[i].append([count, bl[0], float(bl[1]), int(bl[2]), bl[3], bl[4]])
+			ws[i].append([count, bl[0], float(bl[1]), int(bl[2]), bl[3], bl[4], bl[5]])
 			count += 1
 	save_path = 'book_list'
 	for i in range(len(book_tag_lists)):
