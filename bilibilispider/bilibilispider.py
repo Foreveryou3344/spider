@@ -7,6 +7,7 @@ import random
 import sys
 import requests
 import time
+import urllib2
 import mysql.connector
 from multiprocessing.dummy import Pool as ThreadPool
 
@@ -74,14 +75,18 @@ def getsource(url):
 				print("succeed get user info:" + str(mid) + "\t" + str(timenow))
 				try:
 					res = requests.get('https://api.bilibili.com/x/relation/stat?vmid=' + str(mid) + '&jsonp=jsonp').text
-					viewinfo = requests.get('https://api.bilibili.com/x/space/upstat?mid=' + str(mid) + '&jsonp=jsonp&callback=__jp5').text
+					# viewinfo = requests.get('https://api.bilibili.com/x/space/upstat?mid=' + str(mid) + '&jsonp=jsonp&callback=__jp5').text
+					urlview = 'https://api.bilibili.com/x/space/upstat?mid=' + str(mid) + '&jsonp=jsonp'
+					req = urllib2.Request(urlview, headers=head)
+					viewinfo = urllib2.urlopen(req).read()
 					js_fans_data = json.loads(res)
 					js_view_data = json.loads(viewinfo)
 					following = js_fans_data['data']['following']
 					fans = js_fans_data['data']['follower']
 					archiveview = js_view_data['data']['archive']['view']
 					article = js_view_data['data']['article']['view']
-				except:
+				except Exception as e:
+					print e
 					following = 0
 					fans = 0
 					archiveview = 0
