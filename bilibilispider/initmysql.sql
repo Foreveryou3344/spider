@@ -36,3 +36,9 @@ create table url_fail (
   `url` varchar(45)  NOT NULL,
   `status` varchar(200)  NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table sys_data (
+  `id` int(10)  NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO sys_data (id) VALUES (0)

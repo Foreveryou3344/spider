@@ -132,9 +132,22 @@ def getsource(url):
 if __name__ == '__main__':
 	pool = ThreadPool(1)
 	try:
-		for m in range(0, 100):
+		conn = mysql.connector.connect(user='bilibili', password='bilibili', database='bilibili', host='127.0.0.1',
+		                               port=3306, use_unicode=True, charset='utf8', collation='utf8_general_ci',
+		                               autocommit=False)
+		cursor = conn.cursor()
+		cursor.execute('select id from sys_data')
+		row = cursor.fetchone()
+		n = row[0]
+		for m in xrange(n, 4000000):
 			urls = addurl(m)
 			results = pool.map(getsource, urls)
+			conn = mysql.connector.connect(user='bilibili', password='bilibili', database='bilibili', host='127.0.0.1',
+			                               port=3306, use_unicode=True, charset='utf8', collation='utf8_general_ci',
+			                               autocommit=False)
+			cursor = conn.cursor()
+			cursor.execute('update sys_data set id = %d' % (m + 1))
+			conn.commit()  # 记录id中断位置
 	except Exception as e:
 		print(e)
 	pool.close()
