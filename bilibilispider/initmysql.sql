@@ -31,3 +31,8 @@ create table bilibili_user_info (
   `article` int(20) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+create table url_fail (
+  `url` varchar(45)  NOT NULL,
+  `status` varchar(200)  NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

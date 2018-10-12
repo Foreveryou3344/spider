@@ -13,7 +13,6 @@ from multiprocessing.dummy import Pool as ThreadPool
 
 
 reload(sys)
-urls = []
 
 
 def LoadUserAgents(uafile):
@@ -21,16 +20,29 @@ def LoadUserAgents(uafile):
 	with open(uafile, 'rb') as uaf:
 		for ua in uaf.readlines():
 			if ua:
-				uas.append(ua.strip()[1:-1])
-	random.shuffle(uas)
+				uas.append(ua.strip()[1:-1])  # 去掉“”
+	random.shuffle(uas)  # 随机排序
 	return uas
 
 
 uas = LoadUserAgents("user_agents.txt")
-for m in range(2449072, 2449073):
-	for i in range(m*100, (m+1)*100):
+
+
+def addurl(num):
+	urls = []
+	for i in range(num*100, (num+1)*100):
 		url = 'https://space.bilibili.com/' + str(i)
 		urls.append(url)
+	return urls
+
+
+def url_fail(url, status):
+	conn = mysql.connector.connect(user='bilibili', password='bilibili', database='bilibili', host='127.0.0.1',
+	                               port=3306, use_unicode=True, charset='utf8', collation='utf8_general_ci',
+	                               autocommit=False)
+	cursor = conn.cursor()
+	cursor.execute('INSERT INTO url_fail(url, status)VALUES("%s", "%s")' % (url, status))
+	conn.commit()  # 这里面做下失败url的收录
 
 
 def getsource(url):
@@ -38,7 +50,7 @@ def getsource(url):
 		'mid': url.replace('https://space.bilibili.com/', ''),
 		'csrf': ''
 	}
-	ua = random.choice(uas)
+	ua = random.choice(uas)  # 随机选择
 	head = {
 		'User-Agent': ua,
 		'Referer': url + '/'
@@ -47,6 +59,7 @@ def getsource(url):
 	# jsontxt = urllib2.urlopen(req).read()
 	jsontxt = requests.session().post('https://space.bilibili.com/ajax/member/GetInfo', headers=head, data=payload).text
 	timenow = time.time()
+	time.sleep(random.random())  # b站反爬虫限制ip接入频率 约为150次/min
 	try:
 		jsdic = json.loads(jsontxt)
 		statusjson = jsdic['status'] if 'status' in jsdic.keys() else False
@@ -107,17 +120,21 @@ def getsource(url):
 				conn.commit()
 			except Exception as e:
 				print e
+				url_fail(url, e)  # 插值失败
 		else:
 			print('error:' + url)
+			url_fail(url, "notfound")  # 用户不存在
 	except Exception as e:
 		print e
-		pass
+		url_fail(url, e)  # 403等错误
 
 
 if __name__ == '__main__':
 	pool = ThreadPool(1)
 	try:
-		results = pool.map(getsource, urls)
+		for m in range(0, 100):
+			urls = addurl(m)
+			results = pool.map(getsource, urls)
 	except Exception as e:
 		print(e)
 	pool.close()
