@@ -5,9 +5,9 @@
 import json
 import random
 import sys
-import requests
 import time
 import urllib2
+import urllib
 import mysql.connector
 from multiprocessing.dummy import Pool as ThreadPool
 
@@ -55,9 +55,10 @@ def getsource(url):
 		'User-Agent': ua,
 		'Referer': url + '/'
 	}
-	# req = urllib2.Request('https://space.bilibili.com/ajax/member/GetInfo', headers=head, data=payload)
-	# jsontxt = urllib2.urlopen(req).read()
-	jsontxt = requests.session().post('https://space.bilibili.com/ajax/member/GetInfo', headers=head, data=payload).text
+	payload = urllib.urlencode(payload)  # 必须先按照urlencode编码才能取到信息，传dict会无法解析
+	reqinfo = urllib2.Request('https://space.bilibili.com/ajax/member/GetInfo', data=payload, headers=head)
+	jsontxt = urllib2.urlopen(reqinfo).read()
+	# jsontxt = requests.session().post('https://space.bilibili.com/ajax/member/GetInfo', headers=head, data=payload).text
 	timenow = time.time()
 	time.sleep(random.random())  # b站反爬虫限制ip接入频率 约为150次/min
 	try:
@@ -87,7 +88,10 @@ def getsource(url):
 				coins = jsdata['coins']
 				print("succeed get user info:" + str(mid) + "\t" + str(timenow))
 				try:
-					res = requests.get('https://api.bilibili.com/x/relation/stat?vmid=' + str(mid) + '&jsonp=jsonp').text
+					# res = requests.get('https://api.bilibili.com/x/relation/stat?vmid=' + str(mid) + '&jsonp=jsonp').text
+					urlres = 'https://api.bilibili.com/x/relation/stat?vmid=' + str(mid) + '&jsonp=jsonp'
+					reqres = urllib2.Request(urlres, headers=head)
+					res = urllib2.urlopen(reqres).read()
 					# viewinfo = requests.get('https://api.bilibili.com/x/space/upstat?mid=' + str(mid) + '&jsonp=jsonp&callback=__jp5').text
 					urlview = 'https://api.bilibili.com/x/space/upstat?mid=' + str(mid) + '&jsonp=jsonp'
 					req = urllib2.Request(urlview, headers=head)
