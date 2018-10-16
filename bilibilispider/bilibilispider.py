@@ -44,6 +44,7 @@ def url_fail(url, status):
 		cursor = conn.cursor()
 		cursor.execute('INSERT INTO url_fail(url, status)VALUES("%s", "%s")' % (url, status))
 		conn.commit()  # 这里面做下失败url的收录
+		conn.close()
 	except Exception as e:
 		print url
 
@@ -125,6 +126,7 @@ def getsource(url):
 				                officialverifytype, officialverifydesc, viptype, vipstatus, toutu, toutuid, coins, \
 				                following, fans, archiveview, article))
 				conn.commit()  # bug1:插入记录中有引号会导致报错，使用参数的形式传值可以解决
+				conn.close()
 			except Exception as e:
 				print e
 				url_fail(url, "insert_fail")  # 插值失败
@@ -146,6 +148,7 @@ if __name__ == '__main__':
 		cursor.execute('select id from sys_data')
 		row = cursor.fetchone()
 		n = row[0]
+		conn.close()
 		for m in xrange(n, 4000000):
 			conn = mysql.connector.connect(user='bilibili', password='bilibili', database='bilibili', host='127.0.0.1',
 			                               port=3306, use_unicode=True, charset='utf8', collation='utf8_general_ci',
@@ -153,6 +156,7 @@ if __name__ == '__main__':
 			cursor = conn.cursor()
 			cursor.execute('update sys_data set id = %d' % (m + 1))
 			conn.commit()  # 记录id中断位置
+			conn.close()
 			urls = addurl(m)
 			results = pool.map(getsource, urls)
 	except Exception as e:
