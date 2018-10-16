@@ -37,12 +37,15 @@ def addurl(num):
 
 
 def url_fail(url, status):
-	conn = mysql.connector.connect(user='bilibili', password='bilibili', database='bilibili', host='127.0.0.1',
+	try:  # 做下错误处理 ，不然会出现中断的情况
+		conn = mysql.connector.connect(user='bilibili', password='bilibili', database='bilibili', host='127.0.0.1',
 	                               port=3306, use_unicode=True, charset='utf8', collation='utf8_general_ci',
 	                               autocommit=False)
-	cursor = conn.cursor()
-	cursor.execute('INSERT INTO url_fail(url, status)VALUES("%s", "%s")' % (url, status))
-	conn.commit()  # 这里面做下失败url的收录
+		cursor = conn.cursor()
+		cursor.execute('INSERT INTO url_fail(url, status)VALUES("%s", "%s")' % (url, 'insert_fail'))
+		conn.commit()  # 这里面做下失败url的收录
+	except Exception as e:
+		print url
 
 
 def getsource(url):
@@ -117,11 +120,11 @@ def getsource(url):
 				birthday, sign, level, OfficialVerifyType, OfficialVerifyDesc, vipType, vipStatus, \
 				toutu, toutuId, coins, following, fans, archiveview, article) \
 				VALUES("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", \
-				"%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")' %
+				"%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")',
 				               (mid, name, sex, rank, face, regtime, spacesta, birthday, sign, level, \
 				                officialverifytype, officialverifydesc, viptype, vipstatus, toutu, toutuid, coins, \
 				                following, fans, archiveview, article))
-				conn.commit()
+				conn.commit()  # bug1:插入记录中有引号会导致报错，使用参数的形式传值可以解决
 			except Exception as e:
 				print e
 				url_fail(url, e)  # 插值失败
@@ -144,17 +147,16 @@ if __name__ == '__main__':
 		row = cursor.fetchone()
 		n = row[0]
 		for m in xrange(n, 4000000):
-			urls = addurl(m)
-			results = pool.map(getsource, urls)
 			conn = mysql.connector.connect(user='bilibili', password='bilibili', database='bilibili', host='127.0.0.1',
 			                               port=3306, use_unicode=True, charset='utf8', collation='utf8_general_ci',
 			                               autocommit=False)
 			cursor = conn.cursor()
 			cursor.execute('update sys_data set id = %d' % (m + 1))
 			conn.commit()  # 记录id中断位置
+			urls = addurl(m)
+			results = pool.map(getsource, urls)
 	except Exception as e:
 		print(e)
 	pool.close()
 	pool.join()
-
 
