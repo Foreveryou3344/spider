@@ -42,7 +42,7 @@ def url_fail(url, status):
 	                               port=3306, use_unicode=True, charset='utf8', collation='utf8_general_ci',
 	                               autocommit=False)
 		cursor = conn.cursor()
-		cursor.execute('INSERT INTO url_fail(url, status)VALUES("%s", "%s")' % (url, 'insert_fail'))
+		cursor.execute('INSERT INTO url_fail(url, status)VALUES("%s", "%s")' % (url, status))
 		conn.commit()  # 这里面做下失败url的收录
 	except Exception as e:
 		print url
@@ -127,7 +127,7 @@ def getsource(url):
 				conn.commit()  # bug1:插入记录中有引号会导致报错，使用参数的形式传值可以解决
 			except Exception as e:
 				print e
-				url_fail(url, e)  # 插值失败
+				url_fail(url, "insert_fail")  # 插值失败
 		else:
 			print('error:' + url)
 			url_fail(url, "notfound")  # 用户不存在
