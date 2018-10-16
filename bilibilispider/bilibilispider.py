@@ -137,7 +137,7 @@ def getsource(url):
 
 
 if __name__ == '__main__':
-	pool = ThreadPool(1)
+	pool = ThreadPool(1)  # 降速
 	try:
 		conn = mysql.connector.connect(user='bilibili', password='bilibili', database='bilibili', host='127.0.0.1',
 		                               port=3306, use_unicode=True, charset='utf8', collation='utf8_general_ci',
