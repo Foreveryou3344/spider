@@ -58,13 +58,13 @@ def getsource(url):
 		'User-Agent': ua,
 		'Referer': url + '/'
 	}
-	payload = urllib.urlencode(payload)  # 必须先按照urlencode编码才能取到信息，传dict会无法解析
-	reqinfo = urllib2.Request('https://space.bilibili.com/ajax/member/GetInfo', data=payload, headers=head)
-	jsontxt = urllib2.urlopen(reqinfo).read()
-	# jsontxt = requests.session().post('https://space.bilibili.com/ajax/member/GetInfo', headers=head, data=payload).text
-	timenow = time.time()
-	time.sleep(random.random())  # b站反爬虫限制ip接入频率 约为150次/min
 	try:
+		payload = urllib.urlencode(payload)  # 必须先按照urlencode编码才能取到信息，传dict会无法解析
+		reqinfo = urllib2.Request('https://space.bilibili.com/ajax/member/GetInfo', data=payload, headers=head)
+		jsontxt = urllib2.urlopen(reqinfo).read()
+		# jsontxt = requests.session().post('https://space.bilibili.com/ajax/member/GetInfo', headers=head, data=payload).text
+		timenow = time.time()
+		# time.sleep(random.random())  # b站反爬虫限制ip接入频率 约为150次/min
 		jsdic = json.loads(jsontxt)
 		statusjson = jsdic['status'] if 'status' in jsdic.keys() else False
 		if statusjson:
