@@ -142,16 +142,16 @@ def do_xiaoqu_spider(db_xq, region="pudong"):
 		req = urllib2.Request(url, headers=head)
 		source_code = urllib2.urlopen(req, timeout=5).read()
 		soup = BeautifulSoup(source_code, 'lxml')
+		totaldiv = soup.find('h2', {'class': 'total fl'})
+		total = totaldiv.span.text
+		total_page = int(total) / 30 + 1  # 一页30条数据
+		threads = []
 	except (urllib2.HTTPError, urllib2.URLError), e:
 		print e
 		return
 	except Exception, e:
 		print e
 		return
-	totaldiv = soup.find('h2', {'class': 'total fl'})
-	total = totaldiv.span.text
-	total_page = int(total)/30 + 1  # 一页30条数据
-	threads = []
 	for i in xrange(total_page):
 		url_page = "https://sh.lianjia.com/xiaoqu/%s/pg%d/" % (region, i)
 		t = threading.Thread(target=xiaoqu_spider, args=(db_xq, url_page))
@@ -246,6 +246,12 @@ def xiaoqu_chengjiao_spider(db_cj, xq_url='https://sh.lianjia.com/xiaoqu/5011063
 		req = urllib2.Request(url, headers=head)
 		source_code = urllib2.urlopen(req, timeout=10).read()
 		soup = BeautifulSoup(source_code, 'lxml')
+		totaldiv = soup.find('div', {'class': 'total fl'})
+		total = totaldiv.span.text
+		if total == '0':
+			return
+		total_page = int(total) / 30 + 1  # 一页30条数据
+		threads = []
 	except (urllib2.HTTPError, urllib2.URLError), e:
 		print e
 		exception_write('xiaoqu_chengjiao_spider', xq_url)
@@ -254,12 +260,6 @@ def xiaoqu_chengjiao_spider(db_cj, xq_url='https://sh.lianjia.com/xiaoqu/5011063
 		print e
 		exception_write('xiaoqu_chengjiao_spider', xq_url)
 		return
-	totaldiv = soup.find('div', {'class': 'total fl'})
-	total = totaldiv.span.text
-	if total == '0':
-		return
-	total_page = int(total)/30 + 1  # 一页30条数据
-	threads = []
 	for i in xrange(total_page):
 		url_page = url + 'pg%s/' % i
 		t = threading.Thread(target=chengjiao_spider, args=(db_cj, url_page))
@@ -275,10 +275,11 @@ def xiaoqu_chengjiao_spider(db_cj, xq_url='https://sh.lianjia.com/xiaoqu/5011063
 def do_xiaoqu_chengjiao_spider(db_cj, region='浦东'):
 	count = 0
 	xq_list = db_cj.fetchall(region=region)
+	total = len(xq_list)
 	for xq in xq_list:
 		xiaoqu_chengjiao_spider(db_cj, xq[0])
 		count += 1
-		print '获取了%s小区的成交信息' % xq[0]
+		print '获取了%s小区的成交信息  %d / %d' % (xq[0], count, total)
 	print '获取了%s 区共 %s 个小区的成交记录' % (region, count)
 
 
