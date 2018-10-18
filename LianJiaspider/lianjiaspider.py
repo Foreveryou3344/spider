@@ -14,7 +14,7 @@ sys.setdefaultencoding("utf-8")
 
 regions = ["pudong", "minhang", "baoshan", "xuhui", "putuo", "yangpu", "changning", "songjiang", "jiading", "huangpu", "jingan", "zhabei", "hongkou", "qingpu", "fengxian", "jinshan", "chongming", "shanghaizhoubian"]
 regionname = ["浦东", "闵行", "宝山", "徐汇", "普陀", "杨浦", "长宁", "松江", "嘉定", "黄埔", "静安", "闸北", "虹口", "青浦", "奉贤", "金山", "崇明", "上海周边"]
-lock = threading.Lock()
+lock = threading.Lock()  # 定义锁
 
 
 def load_user_agents(uafile):
@@ -32,7 +32,7 @@ uas = load_user_agents("user_agents.txt")
 
 class mysql_wraper(object):
 	def __init__(self, command=''):
-		self.lock = threading.RLock()
+		self.lock = threading.RLock()  # 多重锁，同一线程可以多次申请
 		if command != '':
 			conn = self.get_conn()
 			cu = conn.cursor()
@@ -49,12 +49,12 @@ class mysql_wraper(object):
 
 	def conn_trans(func):
 		def connection(self, *args, **kw):
-			self.lock.acquire()
+			self.lock.acquire()  # 申请锁
 			conn = self.get_conn()
 			kw['conn'] = conn
 			rs = func(self, *args, **kw)
 			self.conn_close(conn)
-			self.lock.release()
+			self.lock.release()  # 释放锁
 			return rs
 		return connection
 
@@ -166,7 +166,7 @@ def do_xiaoqu_spider(db_xq, region="pudong"):
 	print "获取了%s 区所有的小区信息共%s条" % (region, total)
 
 
-def chengjiao_spider(db_cj, url_page="https://sh.lianjia.com/xiaoqu/pg1rs/"):
+def chengjiao_spider(db_cj, url_page="https://sh.lianjia.com/chengjiao/c5011000009636/pg0/"):
 	try:
 		head = {'User-Agent': random.choice(uas)}
 		req = urllib2.Request(url_page, headers=head)
