@@ -175,12 +175,12 @@ def chengjiao_spider(db_cj, url_page="https://sh.lianjia.com/xiaoqu/pg1rs/"):
 	except (urllib2.HTTPError, urllib2.URLError), e:
 		print e
 		print url_page
-		# exception_write('chengjiao_spider', url_page)
+		exception_write('chengjiao_spider', url_page)
 		return
 	except Exception, e:
 		print e
 		print url_page
-		# exception_write('chengjiao_spider', url_page)
+		exception_write('chengjiao_spider', url_page)
 		return
 	cj_list = soup.findAll('div', {'class': 'info'})
 	for cj in cj_list:
@@ -249,11 +249,11 @@ def xiaoqu_chengjiao_spider(db_cj, xq_url='https://sh.lianjia.com/xiaoqu/5011063
 		soup = BeautifulSoup(source_code)
 	except (urllib2.HTTPError, urllib2.URLError), e:
 		print e
-		# exception_write('xiaoqu_chengjiao_spider', xq_url)
+		exception_write('xiaoqu_chengjiao_spider', xq_url)
 		return
 	except Exception, e:
 		print e
-		# exception_write('xiaoqu_chengjiao_spider', xq_url)
+		exception_write('xiaoqu_chengjiao_spider', xq_url)
 		return
 	totaldiv = soup.find('div', {'class': 'total fl'})
 	total = totaldiv.span.text
@@ -265,12 +265,12 @@ def xiaoqu_chengjiao_spider(db_cj, xq_url='https://sh.lianjia.com/xiaoqu/5011063
 		url_page = url + 'pg%s/' % i
 		t = threading.Thread(target=chengjiao_spider, args=(db_cj, url_page))
 		threads.append(t)
+		# t.start()
+		# t.join()
+	for t in threads:
 		t.start()
+	for t in threads:
 		t.join()
-	# for t in threads:
-	# 	t.start()
-	# for t in threads:
-	# 	t.join()
 
 
 def do_xiaoqu_chengjiao_spider(db_cj, region='浦东'):
@@ -283,10 +283,53 @@ def do_xiaoqu_chengjiao_spider(db_cj, region='浦东'):
 	print '获取了%s 区共 %s 个小区的成交记录' % (region, count)
 
 
+def exception_write(fun_name, url):
+	lock.acquire()
+	f = open('log.txt', 'a')
+	line = "%s %s\n" % (fun_name, url)
+	f.write(line)
+	f.close()
+	lock.release()
+
+
+def exception_read():
+	lock.acquire()
+	f = open('log.txt', 'r')
+	lines = f.readlines()
+	f = open('log.txt', 'w')
+	f.truncate()
+	f.close()
+	lock.release()
+	return lines
+
+
+def exception_spider(db_cj):
+	conut = 0
+	excep_list = exception_read()
+	while excep_list:
+		for excep in excep_list:
+			excep = excep.strip()
+			if excep == "":
+				continue
+			excep_name, url = excep.split(" ", 1)
+			if excep_name == "chengjiao_spider":
+				chengjiao_spider(db_cj, url)
+				conut += 1
+			elif excep_name == "xiaoqu_chengjiao_spider":
+				xiaoqu_chengjiao_spider(db_cj, url)
+				conut += 1
+			else:
+				print "wrong format"
+			print '处理了%d 异常url' % conut
+		excep_list = exception_read()
+	print 'all done'
+
+
 if __name__ == "__main__":
 	conn = mysql_wraper()
 	# for region in regions:
 	# 	do_xiaoqu_spider(conn, region)
-	for region in regionname:
-		do_xiaoqu_chengjiao_spider(conn, region)
+	# for region in regionname:
+	# 	do_xiaoqu_chengjiao_spider(conn, region)
+	exception_spider(conn)
 
