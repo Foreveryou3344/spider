@@ -327,9 +327,9 @@ def exception_spider(db_cj):
 
 if __name__ == "__main__":
 	conn = mysql_wraper()
-	# for region in regions:
-	# 	do_xiaoqu_spider(conn, region)
-	# for region in regionname:
-	# 	do_xiaoqu_chengjiao_spider(conn, region)
+	for region in regions:
+		do_xiaoqu_spider(conn, region)
+	for region in regionname:
+		do_xiaoqu_chengjiao_spider(conn, region)
 	exception_spider(conn)
 
