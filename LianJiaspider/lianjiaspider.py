@@ -1,6 +1,5 @@
 #!usr/bin/env python
 # _*_ coding:utf-8 _*_
-import re
 import urllib2
 import mysql.connector
 import random
@@ -116,7 +115,7 @@ def xiaoqu_spider(db_xq, url_page="https://sh.lianjia.com/xiaoqu/pg1rs/"):
 		head = {'User-Agent': random.choice(uas)}
 		req = urllib2.Request(url_page, headers=head)
 		source_code = urllib2.urlopen(req, timeout=10).read()
-		soup = BeautifulSoup(source_code)
+		soup = BeautifulSoup(source_code, 'lxml')
 	except (urllib2.HTTPError, urllib2.URLError), e:
 		print e
 		exit(-1)
@@ -142,7 +141,7 @@ def do_xiaoqu_spider(db_xq, region="pudong"):
 		head = {'User-Agent': random.choice(uas)}
 		req = urllib2.Request(url, headers=head)
 		source_code = urllib2.urlopen(req, timeout=5).read()
-		soup = BeautifulSoup(source_code)
+		soup = BeautifulSoup(source_code, 'lxml')
 	except (urllib2.HTTPError, urllib2.URLError), e:
 		print e
 		return
@@ -171,7 +170,7 @@ def chengjiao_spider(db_cj, url_page="https://sh.lianjia.com/chengjiao/c50110000
 		head = {'User-Agent': random.choice(uas)}
 		req = urllib2.Request(url_page, headers=head)
 		source_code = urllib2.urlopen(req, timeout=10).read()
-		soup = BeautifulSoup(source_code)
+		soup = BeautifulSoup(source_code, 'lxml')
 	except (urllib2.HTTPError, urllib2.URLError), e:
 		print e
 		print url_page
@@ -203,7 +202,7 @@ def chengjiao_spider(db_cj, url_page="https://sh.lianjia.com/chengjiao/c50110000
 				head = {'User-Agent': random.choice(uas)}
 				req = urllib2.Request(href.get('href'), headers=head)
 				source_code = urllib2.urlopen(req, timeout=10).read()
-				soup1 = BeautifulSoup(source_code)
+				soup1 = BeautifulSoup(source_code, 'lxml')
 			except (urllib2.HTTPError, urllib2.URLError), e:
 				print e
 				print href.get('href')
@@ -246,7 +245,7 @@ def xiaoqu_chengjiao_spider(db_cj, xq_url='https://sh.lianjia.com/xiaoqu/5011063
 		head = {'User-Agent': random.choice(uas)}
 		req = urllib2.Request(url, headers=head)
 		source_code = urllib2.urlopen(req, timeout=10).read()
-		soup = BeautifulSoup(source_code)
+		soup = BeautifulSoup(source_code, 'lxml')
 	except (urllib2.HTTPError, urllib2.URLError), e:
 		print e
 		exception_write('xiaoqu_chengjiao_spider', xq_url)
@@ -327,8 +326,8 @@ def exception_spider(db_cj):
 
 if __name__ == "__main__":
 	conn = mysql_wraper()
-	for region in regions:
-		do_xiaoqu_spider(conn, region)
+	# for region in regions:
+	# 	do_xiaoqu_spider(conn, region)
 	for region in regionname:
 		do_xiaoqu_chengjiao_spider(conn, region)
 	exception_spider(conn)
