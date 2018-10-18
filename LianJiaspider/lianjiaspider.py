@@ -244,7 +244,7 @@ def xiaoqu_chengjiao_spider(db_cj, xq_url='https://sh.lianjia.com/xiaoqu/5011063
 	url = 'https://sh.lianjia.com/chengjiao/c' + xq_url.split('xiaoqu/')[1]
 	try:
 		head = {'User-Agent': random.choice(uas)}
-		req = urllib2.Request('https://sh.lianjia.com/chengjiao/c5011000011751/', headers=head)
+		req = urllib2.Request(url, headers=head)
 		source_code = urllib2.urlopen(req, timeout=10).read()
 		soup = BeautifulSoup(source_code)
 	except (urllib2.HTTPError, urllib2.URLError), e:
