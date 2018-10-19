@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
-# import lianjialogin  # sh无论登陆与否都不会在列表中显示30内的成交价格
 
 
 regions = ["pudong", "minhang", "baoshan", "xuhui", "putuo", "yangpu", "changning", "songjiang", "jiading", "huangpu", "jingan", "zhabei", "hongkou", "qingpu", "fengxian", "jinshan", "chongming", "shanghaizhoubian"]
@@ -327,8 +326,8 @@ def exception_spider(db_cj):
 
 if __name__ == "__main__":
 	conn = mysql_wraper()
-	# for region in regions:
-	# 	do_xiaoqu_spider(conn, region)
+	for region in regions:
+		do_xiaoqu_spider(conn, region)
 	for region in regionname:
 		do_xiaoqu_chengjiao_spider(conn, region)
 	exception_spider(conn)
