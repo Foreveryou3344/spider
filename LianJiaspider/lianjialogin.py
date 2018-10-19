@@ -49,8 +49,8 @@ lt = pattern.findall(html_content)[0]
 pattern = re.compile(r'name="execution" value="(.*)"')
 execution = pattern.findall(html_content)[0]
 data = {
-	'username': '18629656575',
-	'password': '584Ilovelianjia',
+	'username': '**********',
+	'password': '**********',
 	'execution': execution,
 	'_eventId': 'submit',
 	'lt': lt,
